@@ -1,0 +1,338 @@
+@page
+@model Shakepayrollsystem.Pages.dashboardModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Dashboard - Shake Payroll System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+</head>
+<style>
+    .badge.present {
+        background-color: #4caf50;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+    }
+    .badge.late {
+        background-color: #f44336;
+        text-align: center;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        width: 65px;
+    }
+    .badge.absent {
+        background-color: #22d246;
+        text-align: center;
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        width: 65px;
+    }
+</style>    
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="~/images/logologin.png" alt="Logo" class="sidebar-logo">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/staff">
+                            <i class="fas fa-users"></i>
+                            <span>Staff</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/attendance">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/payroll">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Payroll</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wagelog">
+                            <i class="fas fa-clock"></i>
+                            <span>Wagelog</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form method="post" asp-page-handler="Logout" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; width: 100%; text-align: left; padding: 12px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <h1>Payroll Dashboard</h1>
+                <div class="user-info">
+    <span>Welcome, @Model.Username</span>
+    <div class="user-avatar">
+        <i class="fas fa-user-circle"></i>
+    </div>
+</div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="content">
+                <!-- Alert Messages -->
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-error">@Model.ErrorMessage</div>
+                }
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e3f2fd;">
+                            <i class="fas fa-users" style="color: #1976d2;"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Total Staff</h3>
+                            <p class="stat-number">@Model.TotalStaff</p>
+                            <span class="stat-change">
+                                <i class="fas fa-user-check"></i> Active employees
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #e8f5e9;">
+                            <i class="fas fa-user-check" style="color: #388e3c;"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Present Today</h3>
+                            <p class="stat-number">@Model.PresentToday</p>
+                            <span class="stat-change positive">
+                                <i class="fas fa-clock"></i> @Model.LateToday Late
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #ffebee;">
+                            <i class="fas fa-user-clock" style="color: #f44336;"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Absent Today</h3>
+                            <p class="stat-number">@Model.AbsentToday</p>
+                            <span class="stat-change">
+                                <i class="fas fa-calendar-times"></i> Not checked in
+                            </span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: #fff3e0;">
+                            <i class="fas fa-money-bill-wave" style="color: #f57c00;"></i>
+                        </div>
+                        <div class="stat-details">
+                            <h3>Monthly Payroll</h3>
+                            <p class="stat-number">₱ @Model.MonthlyPayroll.ToString("N2")</p>
+                            <span class="stat-change">
+                                <i class="fas fa-calendar"></i> This month
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity Section -->
+                <div class="content-grid">
+                    <!-- Recent Attendance -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-calendar-check"></i> Recent Attendance</h3>
+                            <a href="/attendance" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="card-body">
+                            <table class="recent-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Date</th>
+                                        <th>Time In</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.RecentAttendance != null && Model.RecentAttendance.Rows.Count > 0)
+                                    {
+                                        @foreach (System.Data.DataRow row in Model.RecentAttendance.Rows)
+                                        {
+                                            string status = row["status"]?.ToString() ?? "Unknown";
+                                            string badgeClass = status == "On Time" ? "present" : (status == "Late" ? "late" : "absent");
+                                            <tr>
+                                                <td>@row["username"]</td>
+                                                <td>@Convert.ToDateTime(row["date"]).ToString("MMM dd")</td>
+                                                <td>@row["timeIN"]</td>
+                                                <td><span class="badge @badgeClass">@status</span></td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; padding: 20px;">
+                                                <i class="fas fa-calendar-times" style="font-size: 24px; color: #ccc;"></i>
+                                                <p style="color: #999;">No recent attendance records</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Wage Logs -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock"></i> Recent Wage Logs</h3>
+                            <a href="/wagelog" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                        </div>
+                        <div class="card-body">
+                            <table class="recent-table">
+                                <thead>
+                                    <tr>
+                                        <th>Employee</th>
+                                        <th>Cut Off</th>
+                                        <th>Net Pay</th>
+                                        <th>Date Paid</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @if (Model.RecentWageLogs != null && Model.RecentWageLogs.Rows.Count > 0)
+                                    {
+                                        @foreach (System.Data.DataRow row in Model.RecentWageLogs.Rows)
+                                        {
+                                            <tr>
+                                                <td>@row["username"]</td>
+                                                <td>@Convert.ToDateTime(row["cutOffStart"]).ToString("MMM dd") - @Convert.ToDateTime(row["cutOffEnd"]).ToString("MMM dd")</td>
+                                                <td>₱ @Convert.ToDecimal(row["netPay"]).ToString("N2")</td>
+                                                <td>@Convert.ToDateTime(row["datePaid"]).ToString("MMM dd, yyyy")</td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="4" style="text-align: center; padding: 20px;">
+                                                <i class="fas fa-receipt" style="font-size: 24px; color: #ccc;"></i>
+                                                <p style="color: #999;">No recent wage logs</p>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Upcoming Payroll Section -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-money-check-alt"></i> Upcoming Payroll</h3>
+                        <a href="/payroll" class="view-all">Process Payroll <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <div class="payroll-info">
+                            <div class="payroll-period">
+                                <span class="label">Next Pay Date:</span>
+                                <span class="value">@DateTime.Now.AddDays(7).ToString("MMMM dd, yyyy")</span>
+                            </div>
+                            <div class="payroll-period">
+                                <span class="label">Payroll Period:</span>
+                                <span class="value">@DateTime.Now.AddDays(-14).ToString("MMM dd") - @DateTime.Now.ToString("MMM dd, yyyy")</span>
+                            </div>
+                            <div class="payroll-progress">
+                                <div class="progress-bar">
+                                    <div class="progress" style="width: 65%;"></div>
+                                </div>
+                                <span class="progress-text">65% Ready for processing</span>
+                            </div>
+                        </div>
+                        
+                        <div class="staff-list">
+                                <h4>Staff Summary</h4>
+                                <div class="staff-item">
+                                    <div class="staff-icon">
+                                        <i class="fas fa-users"></i>
+                                    </div>
+                                    <div class="staff-info">
+                                        <p class="staff-name">Total Staff: @Model.TotalStaff</p>
+                                        <p class="staff-role">@Model.PresentToday present today</p>
+                                    </div>
+                                    <span class="staff-time">@Model.LateToday late</span>
+                                </div>
+                            </div>
+                          <div class="staff-item">
+                            <div class="staff-icon">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="staff-info">
+                                <p class="staff-name">Monthly Payroll</p>
+                                <p class="staff-role">Current month</p>
+                            </div>
+                            <span class="staff-time">₱ @Model.MonthlyPayroll.ToString("N2")</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <a href="/staff" class="view-all" style="padding: 10px 20px;">
+                        <i class="fas fa-users"></i> Manage Staff
+                    </a>
+                    <a href="/attendance" class="view-all" style="padding: 10px 20px;">
+                        <i class="fas fa-calendar-check"></i> View Attendance
+                    </a>
+                    <a href="/payroll" class="view-all" style="padding: 10px 20px;">
+                        <i class="fas fa-money-bill-wave"></i> Process Payroll
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

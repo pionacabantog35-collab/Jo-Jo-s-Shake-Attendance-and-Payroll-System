@@ -1,0 +1,49 @@
+@page
+@model Shakepayrollsystem.Pages.LoginModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shake Payroll System</title>
+    <link rel="stylesheet" href="~/css/login.css" />
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left side: Image panel -->
+        <div class="logo-box">
+            <img src="~/images/logologin.png" alt="Logo">
+        </div>
+
+        <!-- Right side: Login form -->
+        <div class="login-box">
+            <h2>JO & JO'S SHNACKS</h2>
+            <p class="subtitle">Payroll System</p>
+
+            <!-- Only show error message if it exists -->
+            @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+            {
+                <div class="error-message">@Model.ErrorMessage</div>
+            }
+
+            <form method="post">
+                <div class="input-group">
+                    <label>Username</label>
+                    <input type="text" asp-for="Username" placeholder="Username" required />
+                </div>
+
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" asp-for="Password" placeholder="Password" required />
+                </div>
+
+                <button type="submit">Log in</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

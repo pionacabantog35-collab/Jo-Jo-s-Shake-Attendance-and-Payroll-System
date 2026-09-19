@@ -1,0 +1,604 @@
+@page
+@model Shakepayrollsystem.Pages.staffModel
+@using Newtonsoft.Json
+@{
+    Layout = null;
+    
+    // Helper function to serialize row data safely
+    string SerializeRow(System.Data.DataRow row)
+    {
+        var dict = new System.Collections.Generic.Dictionary<string, object>();
+        foreach (System.Data.DataColumn col in row.Table.Columns)
+        {
+            dict[col.ColumnName] = row[col];
+        }
+        return JsonConvert.SerializeObject(dict);
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Management - Shake Payroll System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/staff.css" />
+    <style>
+        /* Inline style to guarantee error messages appear */
+        .field-validation-error {
+            display: block;
+            color: #f44336;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (unchanged) -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="~/images/logologin.png" alt="Logo" class="sidebar-logo">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/staff">
+                            <i class="fas fa-users"></i>
+                            <span>Staff</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/attendance">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/payroll">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Payroll</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wagelog">
+                            <i class="fas fa-clock"></i>
+                            <span>Wagelog</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form method="post" asp-page-handler="Logout" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; width: 100%; text-align: left; padding: 12px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+            <div class="main-content">
+                <!-- Top Header (unchanged) -->
+                <header class="top-header">
+        <div class="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </div>
+        <h1>Staff Management</h1>
+        <div class="user-info">
+            <span>Welcome, @Model.Username</span>
+            <div class="user-avatar">
+                <i class="fas fa-user-circle"></i>
+            </div>
+        </div>
+    </header>   
+
+            <!-- Staff Content -->
+            <div class="content">
+                <!-- Alert Messages -->
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success">@Model.SuccessMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-error">@Model.ErrorMessage</div>
+                }
+
+                <!-- Actions Bar -->
+                <div class="staff-actions">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="Search by name, contact, or email..." onkeyup="searchTable()">
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <i class="fas fa-plus"></i> Add Staff
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Staff Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Staff List</h3>
+                        <span>Total: @(Model.StaffList?.Rows.Count ?? 0) staff members</span>
+                    </div>
+                    <div class="card-body table-container">
+                        <table class="recent-table" id="staffTable">
+                            <thead>
+                                <tr>
+                                    <th>First Name</th>
+                                    <th>Last Name</th>
+                                    <th>Username</th>
+                                    <th>Contact Number</th>
+                                    <th>Email</th>
+                                    <th>Rate per Hour</th>
+                                    <th>Date Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.StaffList != null && Model.StaffList.Rows.Count > 0)
+                                {
+                                    @foreach (System.Data.DataRow row in Model.StaffList.Rows)
+                                    {
+                                        <tr>
+                                            <td>@row["firstName"]</td>
+                                            <td>@row["lastName"]</td>
+                                            <td>@row["username"]</td>
+                                            <td>@row["contact"]</td>
+                                            <td>@row["email"]</td>
+                                            <td>₱ @string.Format("{0:N2}", row["rateperhour"])</td>
+                                            <td>
+                                                @{
+                                                    var dateVal = row["datecreated"];
+                                                    @(dateVal != DBNull.Value ? Convert.ToDateTime(dateVal).ToString("dd/MM/yyyy") : "")
+                                                }
+                                            </td>
+                                            <td class="action-cell">
+                                                <button class="btn btn-small btn-edit" onclick='openEditModal(@Html.Raw(SerializeRow(row)))'>
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <button class="btn btn-small btn-delete" onclick="confirmDelete('@row["username"]')">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                                <button class="btn btn-small btn-detail" onclick='openDetailModal(@Html.Raw(SerializeRow(row)))'>
+                                                    <i class="fas fa-info-circle"></i> Detail
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="8" class="empty-state">
+                                            <i class="fas fa-users"></i>
+                                            <p>No staff members found.</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Staff Modal -->
+    <div id="addModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-user-plus"></i> Add New Staff</h3>
+                <button class="close-modal" onclick="closeAddModal()">&times;</button>
+            </div>
+            <form method="post" asp-page-handler="AddStaff">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="FirstName" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="LastName" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" name="Username" required maxlength="50" 
+                               title="Username must be unique and at least 3 characters" pattern=".{3,}">
+                    </div>
+                    <div class="form-group">
+                        <label>Password *</label>
+                        <input type="password" name="Password" required minlength="6">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Number *</label>
+                            <input type="tel" name="Contact" required pattern="[0-9]+" 
+                                   title="Please enter only numbers" maxlength="15">
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="Email" required maxlength="100">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="Address" rows="2" maxlength="200"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Rate per Hour (₱) *</label>
+                        <input type="number" name="RatePerHour" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeAddModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Staff Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-edit"></i> Edit Staff</h3>
+                <button class="close-modal" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form method="post" asp-page-handler="EditStaff">
+                <input type="hidden" name="OriginalUsername" id="editOriginalUsername">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="FirstName" id="editFirstName" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="LastName" id="editLastName" required maxlength="50">
+                    </div>
+                    <div class="form-group">
+                        <label>Username *</label>
+                        <input type="text" name="Username" id="editUsername" required maxlength="50"
+                               pattern=".{3,}" title="Username must be at least 3 characters">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Contact Number *</label>
+                            <input type="tel" name="Contact" id="editContact" required pattern="[0-9]+" 
+                                   title="Please enter only numbers" maxlength="15">
+                        </div>
+                        <div class="form-group">
+                            <label>Email *</label>
+                            <input type="email" name="Email" id="editEmail" required maxlength="100">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Address</label>
+                        <textarea name="Address" id="editAddress" rows="2" maxlength="200"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Rate per Hour (₱) *</label>
+                        <input type="number" name="RatePerHour" id="editRatePerHour" step="0.01" min="0" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-cancel" onclick="closeEditModal()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Update Staff</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Detail Modal (unchanged) -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-info-circle"></i> Staff Details</h3>
+                <button class="close-modal" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">First Name:</td><td style="padding: 10px;" id="detailFirstName"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Last Name:</td><td style="padding: 10px;" id="detailLastName"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Username:</td><td style="padding: 10px;" id="detailUsername"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Contact Number:</td><td style="padding: 10px;" id="detailContact"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Email:</td><td style="padding: 10px;" id="detailEmail"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Address:</td><td style="padding: 10px;" id="detailAddress"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Rate per Hour:</td><td style="padding: 10px;" id="detailRate"></td></tr>
+                    <tr><td style="padding: 10px; background: #f5f5f5; font-weight: bold;">Created By:</td><td style="padding: 10px;" id="detailCreatedBy"></td></tr>
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" onclick="closeDetailModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: #f44336;">
+                <h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+                <button class="close-modal" onclick="closeDeleteModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 16px; margin: 20px 0;">Are you sure you want to delete <strong id="deleteUsername"></strong>?</p>
+                <p style="color: #666; font-size: 14px;">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" asp-page-handler="DeleteStaff">
+                    <input type="hidden" name="Username" id="deleteUsernameInput">
+                    <button type="button" class="btn btn-cancel" onclick="closeDeleteModal()">Cancel</button>
+                    <button type="submit" class="btn btn-delete">Delete Staff</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Search functionality
+        function searchTable() {
+            var input = document.getElementById("searchInput");
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById("staffTable");
+            var rows = table.getElementsByTagName("tr");
+
+            for (var i = 1; i < rows.length; i++) {
+                var cells = rows[i].getElementsByTagName("td");
+                var found = false;
+                
+                if (cells.length > 0) {
+                    var firstName = cells[0].textContent || cells[0].innerText;
+                    var lastName = cells[1].textContent || cells[1].innerText;
+                    var username = cells[2].textContent || cells[2].innerText;
+                    var contact = cells[3].textContent || cells[3].innerText;
+                    var email = cells[4].textContent || cells[4].innerText;
+                    
+                    if (firstName.toUpperCase().indexOf(filter) > -1 || 
+                        lastName.toUpperCase().indexOf(filter) > -1 ||
+                        username.toUpperCase().indexOf(filter) > -1 || 
+                        contact.toUpperCase().indexOf(filter) > -1 ||
+                        email.toUpperCase().indexOf(filter) > -1) {
+                        found = true;
+                    }
+                }
+                
+                rows[i].style.display = found ? "" : "none";
+            }
+        }
+
+        // Modal functions
+        function openAddModal() {
+            document.getElementById('addModal').classList.add('active');
+        }
+        function closeAddModal() {
+            document.getElementById('addModal').classList.remove('active');
+        }
+        function openEditModal(row) {
+            document.getElementById('editOriginalUsername').value = row.username;
+            document.getElementById('editFirstName').value = row.firstName || '';
+            document.getElementById('editLastName').value = row.lastName || '';
+            document.getElementById('editUsername').value = row.username;
+            document.getElementById('editContact').value = row.contact || '';
+            document.getElementById('editEmail').value = row.email || '';
+            document.getElementById('editAddress').value = row.address || '';
+            document.getElementById('editRatePerHour').value = row.rateperhour;
+            document.getElementById('editModal').classList.add('active');
+        }
+        function closeEditModal() {
+            document.getElementById('editModal').classList.remove('active');
+        }
+        function openDetailModal(row) {
+            document.getElementById('detailFirstName').textContent = row.firstName || 'N/A';
+            document.getElementById('detailLastName').textContent = row.lastName || 'N/A';
+            document.getElementById('detailUsername').textContent = row.username;
+            document.getElementById('detailContact').textContent = row.contact || 'N/A';
+            document.getElementById('detailEmail').textContent = row.email || 'N/A';
+            document.getElementById('detailAddress').textContent = row.address || 'N/A';
+            document.getElementById('detailRate').textContent = '₱ ' + parseFloat(row.rateperhour).toFixed(2);
+            // Set created by (still present in your modal)
+            document.getElementById('detailCreatedBy').textContent = row.createdby || 'N/A';
+            // Show the modal
+            document.getElementById('detailModal').classList.add('active');
+        }
+        function closeDetailModal() {
+            document.getElementById('detailModal').classList.remove('active');
+        }
+        function confirmDelete(username) {
+            document.getElementById('deleteUsername').textContent = username;
+            document.getElementById('deleteUsernameInput').value = username;
+            document.getElementById('deleteModal').classList.add('active');
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+        }
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // ========== REAL‑TIME VALIDATION + UNIQUE USERNAME CHECK ==========
+            document.addEventListener('DOMContentLoaded', function() {
+                function setupFormValidation(formSelector) {
+                    var form = document.querySelector(formSelector);
+                    if (!form) return;
+
+                    var usernameTaken = false;
+
+                    function setError(input, message) {
+                        var errorSpan = input.nextElementSibling;
+                        if (!errorSpan || !errorSpan.classList.contains('field-validation-error')) {
+                            errorSpan = document.createElement('span');
+                            errorSpan.className = 'field-validation-error';
+                            input.parentNode.insertBefore(errorSpan, input.nextSibling);
+                        }
+                        if (message) {
+                            errorSpan.textContent = message;
+                            errorSpan.style.display = 'block';
+                        } else {
+                            errorSpan.style.display = 'none';
+                        }
+                    }
+
+                    form.querySelectorAll('input, textarea, select').forEach(function(input) {
+                        if (input.dataset.validationAttached) return;
+                        input.dataset.validationAttached = 'true';
+
+                        var errorSpan = document.createElement('span');
+                        errorSpan.className = 'field-validation-error';
+                        errorSpan.style.display = 'none';
+                        input.parentNode.insertBefore(errorSpan, input.nextSibling);
+
+                        function validateHtml5() {
+                            if (input.validity && !input.validity.valid) {
+                                errorSpan.textContent = input.validationMessage || 'Invalid value';
+                                errorSpan.style.display = 'block';
+                                return true;
+                            } else {
+                                errorSpan.style.display = 'none';
+                                return false;
+                            }
+                        }
+
+                        input.addEventListener('input', validateHtml5);
+                        input.addEventListener('blur', validateHtml5);
+
+                        // Username uniqueness check
+                        if (input.name === 'Username') {
+                            let timeout = null;
+                            input.addEventListener('input', function() {
+                                clearTimeout(timeout);
+                                if (input.value.length < 3) return;
+
+                                timeout = setTimeout(function() {
+                                    if (validateHtml5()) return;
+
+                                    // Get original username if editing
+                                    var originalInput = form.querySelector('input[name="OriginalUsername"]');
+                                    var isEditing = originalInput !== null;
+                                    var originalUsername = isEditing ? originalInput.value : '';
+
+                                    // If editing and username unchanged, treat as valid
+                                    if (isEditing && input.value === originalUsername) {
+                                        usernameTaken = false;
+                                        setError(input, null);
+                                        return;
+                                    }
+
+                                    fetch(`/staff?handler=CheckUsername&username=${encodeURIComponent(input.value)}`)
+                                        .then(response => response.json())
+                                        .then(data => {
+                                            if (data.exists) {
+                                                usernameTaken = true;
+                                                setError(input, 'Username already exists.');
+                                            } else {
+                                                usernameTaken = false;
+                                                if (input.validity.valid) {
+                                                    setError(input, null);
+                                                }
+                                            }
+                                        })
+                                        .catch(err => console.error('Username check failed:', err));
+                                }, 500);
+                            });
+                        }
+                    });
+
+                    // Intercept form submission
+                    form.addEventListener('submit', function(e) {
+                        let isValid = true;
+                        let firstInvalid = null;
+
+                        // Check HTML5 validity
+                        form.querySelectorAll('input, textarea, select').forEach(function(input) {
+                            if (input.validity && !input.validity.valid) {
+                                isValid = false;
+                                setError(input, input.validationMessage);
+                                if (!firstInvalid) firstInvalid = input;
+                            } else {
+                                setError(input, null);
+                            }
+                        });
+
+                        var usernameInput = form.querySelector('input[name="Username"]');
+                        var originalInput = form.querySelector('input[name="OriginalUsername"]');
+                        var isEditing = originalInput !== null;
+
+                        // If no username field or HTML5 invalid, stop
+                        if (!usernameInput || !isValid) {
+                            if (!isValid) {
+                                e.preventDefault();
+                                if (firstInvalid) {
+                                    firstInvalid.focus();
+                                    firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                }
+                            }
+                            return;
+                        }
+
+                        // Check if editing and username unchanged – allow submit directly
+                        if (isEditing && usernameInput.value === originalInput.value) {
+                            // Username unchanged, no need to check uniqueness again
+                            if (usernameTaken) {
+                                // Should not happen because we cleared it, but just in case
+                                e.preventDefault();
+                                setError(usernameInput, 'Username already exists.');
+                                usernameInput.focus();
+                            }
+                            // else let the form submit normally
+                            return;
+                        }
+
+                        // For new username or changed username, do final uniqueness check
+                        if (!usernameTaken) {
+                            e.preventDefault(); // prevent default, we'll submit after check
+
+                            fetch(`/staff?handler=CheckUsername&username=${encodeURIComponent(usernameInput.value)}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.exists) {
+                                        setError(usernameInput, 'Username already exists.');
+                                        usernameTaken = true;
+                                        usernameInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    } else {
+                                        // All good – submit the form
+                                        form.submit();
+                                    }
+                                })
+                                .catch(err => {
+                                    console.error('Final username check failed:', err);
+                                    // Fallback: allow submission (or you could show an error)
+                                    form.submit();
+                                });
+                        } else {
+                            e.preventDefault();
+                            setError(usernameInput, 'Username already exists.');
+                            usernameInput.focus();
+                        }
+                    });
+                }
+
+                setupFormValidation('#addModal form');
+                setupFormValidation('#editModal form');
+            });
+    </script>
+</body>
+</html>

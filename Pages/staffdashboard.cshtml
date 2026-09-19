@@ -1,0 +1,378 @@
+@page
+@model Shakepayrollsystem.Pages.staffdashboardModel
+@{
+    Layout = null;
+}
+
+@functions {
+    // Convert a 24-hour time string (e.g., "15:45") to 12-hour format (e.g., "3:45 PM")
+    string FormatTime(string timeString)
+    {
+        if (string.IsNullOrEmpty(timeString) || timeString == "--:-- --")
+            return timeString;
+
+        if (TimeSpan.TryParse(timeString, out TimeSpan ts))
+        {
+            // Use a dummy date to get AM/PM formatting
+            DateTime dt = DateTime.Today.Add(ts);
+            return dt.ToString("h:mm tt");
+        }
+        return timeString;
+    }
+
+    // Convert decimal hours (e.g., 0.05) to "hh:mm:ss.ffffff" (e.g., "00:03:00.000000")
+    string FormatHours(decimal hours)
+    {
+        if (hours == 0) return "00:00:00.000000";
+        TimeSpan ts = TimeSpan.FromHours((double)hours);
+        return ts.ToString(@"hh\:mm\:ss\.ffffff");
+    }
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Dashboard - Shake Payroll System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/staffdashboard.css" />
+    <style>
+        /* Ensure status badges have correct colors */
+        .badge.present { background-color: #4caf50; color: white; }
+        .badge.Late { background-color: #f44336; color: white; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar (unchanged) -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="~/images/logologin.png" alt="Logo" class="sidebar-logo">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li class="active">
+                        <a href="/staffdashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                  
+                 
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form method="post" asp-page-handler="Logout">
+                    <button type="submit" class="logout-btn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header (unchanged) -->
+            <header class="top-header">
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <h1>Staff Dashboard</h1>
+                <div class="user-info">
+                    <span>Welcome, @Model.Username</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Staff Dashboard Content -->
+            <div class="content">
+                <!-- Alert Messages -->
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success">@Model.SuccessMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-error">@Model.ErrorMessage</div>
+                }
+
+                <!-- Current Date and Time Card (unchanged) -->
+                <div class="datetime-card">
+                    <div class="date-box">
+                        <i class="fas fa-calendar-alt"></i>
+                        <div class="date-info">
+                            <span class="day">@DateTime.Now.ToString("dddd")</span>
+                            <span class="date">@DateTime.Now.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                    <div class="time-box">
+                        <i class="fas fa-clock"></i>
+                        <div class="time-info">
+                            <span class="time" id="currentTime">@DateTime.Now.ToString("hh:mm:ss tt")</span>
+                            <span class="timezone">Philippine Time (GMT+8)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Staff Info Card (unchanged) -->
+                <div class="staff-info-card">
+                    <div class="staff-avatar-large">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                    <div class="staff-details-large">
+                        <h2>@Model.Username</h2>
+                        <p><i class="fas fa-envelope"></i> @Model.StaffEmail</p>
+                        <p><i class="fas fa-phone"></i> @Model.StaffContact</p>
+                    </div>
+                    <div class="staff-stats">
+                        <div class="stat">
+                            <span class="stat-label">Rate per Hour</span>
+                            <span class="stat-value">₱ @Model.RatePerHour.ToString("N2")</span>
+                        </div>
+                        <div class="stat">
+                            <span class="stat-label">Today's Hours</span>
+                            <span class="stat-value">@FormatHours(Model.TodayHoursWorked)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Clock Card (unchanged) -->
+                <div class="timeclock-card">
+                    <div class="timeclock-header">
+                        <h3><i class="fas fa-clock"></i> Time Clock</h3>
+                        @if (Model.IsTimedIn)
+                        {
+                            <span class="status-badge status-present">Timed In</span>
+                        }
+                        else if (Model.TimeOut != null)
+                        {
+                            <span class="status-badge status-present">Completed</span>
+                        }
+                        else
+                        {
+                            <span class="status-badge status-absent">Not Timed In</span>
+                        }
+                    </div>
+                    
+                    <div class="timeclock-body">
+                        @if (!Model.IsTimedIn && Model.TimeOut == null)
+                        {
+                            <!-- Time In Section -->
+                            <div class="time-section time-in-section">
+                                <div class="time-icon-large">
+                                    <i class="fas fa-sign-in-alt"></i>
+                                </div>
+                                <div class="time-details-large">
+                                    <h4>Start Your Shift</h4>
+                                    <p>Click the button below to record your time in</p>
+                                    <form method="post" asp-page-handler="TimeIn" id="timeInForm">
+                                        <input type="hidden" name="Username" value="@Model.Username" />
+                                        <input type="hidden" name="TimeIn" id="timeInValue" />
+                                        <input type="hidden" name="Date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                        <button type="button" class="btn-timein" onclick="timeIn()">
+                                            <i class="fas fa-clock"></i> Time In Now
+                                        </button>
+                                    </form> 
+                                </div>
+                            </div>
+                        }
+                        else if (Model.IsTimedIn)
+                        {
+                            <!-- Time Out Section -->
+                            <div class="time-section time-out-section">
+                                <div class="time-icon-large">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                </div>
+                                <div class="time-details-large">
+                                    <h4>End Your Shift</h4>
+                                    <p>You clocked in at <strong>@FormatTime(Model.TimeIn)</strong></p>
+                                    <p>Click the button below to record your time out</p>
+                                    <form method="post" asp-page-handler="TimeOut" id="timeOutForm">
+                                        <input type="hidden" name="Username" value="@Model.Username" />
+                                        <input type="hidden" name="Date" value="@DateTime.Now.ToString("yyyy-MM-dd")" />
+                                        <input type="hidden" name="TimeOut" id="timeOutValue" />
+                                        <button type="button" class="btn-timeout" onclick="timeOut()">
+                                            <i class="fas fa-clock"></i> Time Out Now
+                                        </button>
+                                    </form> 
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <!-- Shift Completed -->
+                            <div class="time-section time-completed-section">
+                                <div class="time-icon-large">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="time-details-large">
+                                    <h4>Shift Completed</h4>
+                                    <p>You clocked in at <strong>@FormatTime(Model.TimeIn)</strong></p>
+                                    <p>You clocked out at <strong>@FormatTime(Model.TimeOut ?? "--:-- --")</strong></p>
+                                    <p>Total hours worked: <strong>@FormatHours(Model.TodayHoursWorked)</strong></p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Today's Attendance Summary -->
+                <div class="summary-card">
+                    <h3><i class="fas fa-chart-line"></i> Today's Attendance Summary</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <span class="summary-label">Date</span>
+                            <span class="summary-value">@DateTime.Now.ToString("MMM dd, yyyy")</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Time In</span>
+                            <span class="summary-value">
+                                @(Model.IsTimedIn || Model.TimeOut != null ? FormatTime(Model.TimeIn) : "--:-- --")
+                            </span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Time Out</span>
+                            <span class="summary-value">@FormatTime(Model.TimeOut ?? "--:-- --")</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Hours Worked</span>
+                            <span class="summary-value">@FormatHours(Model.TodayHoursWorked)</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-label">Status</span>
+                            <span class="summary-value">
+                                @if (Model.IsTimedIn)
+                                {
+                                    <span class="badge present">Working</span>
+                                }
+                                else if (Model.TimeOut != null)
+                                {
+                                    <span class="badge present">Completed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge absent">Not Started</span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Attendance History -->
+                <div class="card" style="margin-top: 20px;">
+                    <div class="card-header">
+                        <h3><i class="fas fa-history"></i> Recent Attendance History</h3>
+                        <a href="/staffdashboard/attendance" class="view-all">View All <i class="fas fa-arrow-right"></i></a>
+                    </div>
+                    <div class="card-body">
+                        <table class="recent-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Time In</th>
+                                    <th>Time Out</th>
+                                    <th>Hours</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.RecentAttendance != null && Model.RecentAttendance.Rows.Count > 0)
+                                {
+                                    @foreach (System.Data.DataRow row in Model.RecentAttendance.Rows)
+                                    {
+                                        string status = row["status"]?.ToString() ?? "Unknown";
+                                        string badgeClass = status == "On-Time" || status == "On Time" || status.ToLower() == "on time" ? "present" : "late";
+                                        decimal hours = 0;
+                                    if (row["hoursWorked"] != DBNull.Value)
+                                    {
+                                        if (row["hoursWorked"] is TimeSpan ts)
+                                            hours = (decimal)ts.TotalHours;
+                                        else
+                                            hours = Convert.ToDecimal(row["hoursWorked"]);
+                                    }
+                                        <tr>
+                                            <td>
+                                                @(row["date"] != DBNull.Value 
+                                                    ? Convert.ToDateTime(row["date"]).ToString("MMM dd, yyyy") 
+                                                    : "")
+                                            </td>
+                                            <td>@FormatTime(row["timeIN"]?.ToString() ?? "--:-- --")</td>
+                                            <td>@FormatTime(row["timeOUT"]?.ToString() ?? "--:-- --")</td>
+                                            <td>@FormatHours(hours)</td>
+                                            <td><span class="badge @badgeClass">@status</span></td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5" style="text-align: center; padding: 30px;">
+                                            <i class="fas fa-calendar-times" style="font-size: 24px; color: #ccc;"></i>
+                                            <p style="color: #999;">No attendance records found</p>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Update clock every second (unchanged)
+        function updateClock() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const seconds = now.getSeconds().toString().padStart(2, '0');
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            const timeString = `${displayHours.toString().padStart(2, '0')}:${minutes}:${seconds} ${ampm}`;
+            
+            document.getElementById('currentTime').textContent = timeString;
+        }
+        setInterval(updateClock, 1000);
+
+        // Time In function (unchanged – uses 24‑hour format for server)
+        function timeIn() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+            
+            console.log("Time In clicked - setting time to: " + currentTime);
+            
+            document.getElementById('timeInValue').value = currentTime;
+            document.getElementById('timeInForm').submit();
+            return false;
+        }
+
+        // Time Out function (unchanged)
+        function timeOut() {
+            const now = new Date();
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            const currentTime = `${hours}:${minutes}`;
+            
+            console.log("Time Out clicked - setting time to: " + currentTime);
+            
+            document.getElementById('timeOutValue').value = currentTime;
+            document.getElementById('timeOutForm').submit();
+            return false;
+        }
+
+        // Menu toggle (unchanged)
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+    </script>
+</body>
+</html>

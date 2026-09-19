@@ -1,0 +1,666 @@
+@page
+@model Shakepayrollsystem.Pages.payrollModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payroll Management - Shake Payroll System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/dashboard.css" />
+    <link rel="stylesheet" href="~/css/payroll.css" />
+
+<style>
+    /* ===== Creative Date Range Display ===== */
+    /* Make date input wider */
+    .wide-date {
+        width: 200px;
+        padding: 0.6rem 1rem;
+        font-size: 1rem;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        transition: border-color 0.3s;
+    }
+
+    .wide-date:focus {
+        border-color: #304ffe;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(48, 79, 254, 0.1);
+    }
+
+    /* Enhance the date range display */
+    .date-range-display {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(135deg, #1e2b5e 0%, #2a3a7a 100%);
+        color: #fff;
+        font-weight: 600;
+        font-size: 1.1rem;
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        margin-left: 20px;
+        white-space: nowrap;
+        backdrop-filter: blur(5px);
+        flex: 1;
+        max-width: fit-content;
+    }
+
+    .date-range-display::before {
+        content: "\f073";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 1.3rem;
+        color: #ffd966;
+        margin-right: 5px;
+    }
+
+    .date-range-display:hover {
+        background: linear-gradient(135deg, #2a3a7a 0%, #1e2b5e 100%);
+        box-shadow: 0 6px 20px rgba(26, 35, 126, 0.4);
+        transform: translateY(-2px);
+    }
+
+    /* Make the controls layout flexible */
+    .date-filter-controls {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 15px;
+        width: 100%;
+    }
+
+    .date-input-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .date-input-group label {
+        font-weight: 500;
+        color: #333;
+    }
+
+    /* Responsive adjustments */
+    .date-range-display {
+        margin-left: 230px;
+        width: 60%;
+        justify-content: center;
+        white-space: normal;
+        text-align: center;
+        border-radius: 30px;
+        padding: 0.7rem 1rem;
+        font-size: 1rem;
+        max-width: none;
+    }
+
+    .date-filter-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .date-input-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* Payroll Confirmation Modal Buttons */
+    #payConfirmModal .btn-cancel {
+        background-color: #6c757d;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    #payConfirmModal .btn-cancel:hover {
+        background-color: #5a6268;
+    }
+
+    #payConfirmModal .btn-primary {
+        background-color: #1a237e;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    #payConfirmModal .btn-primary:hover {
+        background-color: #0d1657;
+    }
+
+    /* Ensure modal footer layout is neat */
+    #payConfirmModal .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 15px 20px;
+        border-top: 1px solid #eee;
+    }
+    #noHoursModal .btn-primary {
+        background-color: #f44336;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+    #noHoursModal .btn-primary:hover {
+        background-color: #a82b22;
+    }
+</style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo-container">
+                <img src="~/images/logologin.png" alt="Logo" class="sidebar-logo">
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul>
+                    <li>
+                        <a href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/staff">
+                            <i class="fas fa-users"></i>
+                            <span>Staff</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/attendance">
+                            <i class="fas fa-calendar-check"></i>
+                            <span>Attendance</span>
+                        </a>
+                    </li>
+                    <li class="active">
+                        <a href="/payroll">
+                            <i class="fas fa-money-bill-wave"></i>
+                            <span>Payroll</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/wagelog">
+                            <i class="fas fa-clock"></i>
+                            <span>Wagelog</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            
+            <div class="sidebar-footer">
+                <form method="post" asp-page-handler="Logout" style="display: inline;">
+                    <button type="submit" style="background: none; border: none; color: rgba(255,255,255,0.8); cursor: pointer; width: 100%; text-align: left; padding: 12px;">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Header -->
+            <header class="top-header">
+                <div class="menu-toggle">
+                    <i class="fas fa-bars"></i>
+                </div>
+                <h1>Payroll Management</h1>
+                <div class="user-info">
+                    <span>Welcome, @Model.Username</span>
+                    <div class="user-avatar">
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Payroll Content -->
+            <div class="content">
+                <!-- Alert Messages -->
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="alert alert-success">@Model.SuccessMessage</div>
+                }
+
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="alert alert-error">@Model.ErrorMessage</div>
+                }
+
+                @if (string.IsNullOrEmpty(Model.SelectedUsername))
+                {
+                    <!-- Staff Cards Grid -->
+                    <div class="staff-cards-section">
+                        <h2>Select Staff Member</h2>
+                        <div class="staff-cards-grid">
+                            @if (Model.StaffList != null && Model.StaffList.Rows.Count > 0)
+                            {
+                                @foreach (System.Data.DataRow staff in Model.StaffList.Rows)
+                                {
+                                    <div class="staff-card">
+                                        <div class="staff-card-header">
+                                            <div class="staff-card-avatar">
+                                                <i class="fas fa-user-circle"></i>
+                                            </div>
+                                        </div>
+                                        <div class="staff-card-body">
+                                            <h3>@staff["username"]</h3>
+                                            <p class="staff-name">@staff["lastName"]</p>
+                                            <p class="staff-email">@staff["email"]</p>
+                                        </div>
+                                        <div class="staff-card-footer">
+                                            <a href="/payroll?username=@staff["username"]" class="btn-view-payroll">
+                                                <i class="fas fa-eye"></i> View Payroll
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="empty-state">
+                                    <i class="fas fa-users"></i>
+                                    <p>No staff members found.</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <!-- Selected Staff Payroll Section -->
+                    <div class="payroll-section">
+                        <!-- Back Button -->
+                        <div class="back-button">
+                            <a href="/payroll" class="btn-back">
+                                <i class="fas fa-arrow-left"></i> Back to Staff List
+                            </a>
+                        </div>
+
+                        <!-- Selected Staff Info -->
+                        <div class="selected-staff-header">
+                            <div class="selected-staff-info">
+                                <div class="selected-staff-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                                <div class="selected-staff-details">
+                                    <h2>@Model.SelectedUsername</h2>
+                                    <p>@Model.SelectedStaffName</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Filter (Single Date Picker - 6-day period, auto-apply) -->
+                        <div class="date-filter-section">
+                            <h3>SELECT PAY PERIOD START DATE (6-day period)</h3>
+                            <div class="date-filter-controls">
+                                <div class="date-input-group">
+                                    <label>Start Date:</label>
+                                    <input type="date" id="startDate" class="date-input wide-date" value="@Model.StartDate.ToString("yyyy-MM-dd")" onchange="applyDateFilter()">
+                                </div>
+                                <!-- Hidden end date field (value set by JavaScript) -->
+                                <input type="hidden" id="endDate" value="@Model.EndDate.ToString("yyyy-MM-dd")">
+                                <span class="date-range-display" id="dateRangeDisplay"></span>
+                            </div>
+                        </div>
+
+                        <!-- Salary Information Cards -->
+                        <div class="salary-info-section">
+                            <h3>SALARY INFORMATION</h3>
+                            <div class="salary-cards-grid">
+                                <div class="salary-card">
+                                    <div class="salary-label">HOURS WORKED</div>
+                                    <div class="salary-value">@Model.HoursWorked.ToString("F2")</div>
+                                </div>
+                                <div class="salary-card">
+                                    <div class="salary-label">GROSS PAY</div>
+                                    <div class="salary-value">₱ @Model.GrossPay.ToString("N2")</div>
+                                </div>
+                                <div class="salary-card">
+                                    <div class="salary-label">SSS</div>
+                                    <div class="salary-value">₱ @Model.SSS.ToString("N2")</div>
+                                </div>
+                                <div class="salary-card">
+                                    <div class="salary-label">PAG-IBIG</div>
+                                    <div class="salary-value">₱ @Model.PagIbig.ToString("N2")</div>
+                                </div>
+                                <div class="salary-card">
+                                    <div class="salary-label">PHILHEALTH</div>
+                                    <div class="salary-value">₱ @Model.PhilHealth.ToString("N2")</div>
+                                </div>
+                                <div class="salary-card">
+                                    <div class="salary-label">TOTAL DEDUCTION</div>
+                                    <div class="salary-value">₱ @Model.TotalDeduction.ToString("N2")</div>
+                                </div>
+                                <div class="salary-card net-pay-card">
+                                    <div class="salary-label">NET PAY</div>
+                                    <div class="salary-value">₱ @Model.NetPay.ToString("N2")</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="payroll-actions">
+                            <button class="btn-print" onclick="printPayroll()">
+                                <i class="fas fa-print"></i> PRINT
+                            </button>
+                            <form method="post" asp-page-handler="ProcessPay" style="display: inline;" id="payForm">
+                                <input type="hidden" name="Username" value="@Model.SelectedUsername" />
+                                <input type="hidden" name="StartDate" id="payStartDate" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+                                <input type="hidden" name="EndDate" id="payEndDate" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+                                <button type="button" class="btn-pay" onclick="openPayConfirmModal()">
+                                    <i class="fas fa-money-bill-wave"></i> PAY
+                                </button>
+                            </form>
+                            <button class="btn-reset" onclick="resetPayroll()">
+                                <i class="fas fa-undo"></i> RESET
+                            </button>
+                        </div>
+
+                        <!-- Payroll History Table -->
+                        <div class="payroll-history-section">
+                            <h3>PAYROLL HISTORY</h3>
+                            <div class="table-container">
+                                <table class="payroll-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Cut Off Start</th>
+                                            <th>Cut Off End</th>
+                                            <th>Hours Worked</th>
+                                            <th>Gross Pay</th>
+                                            <th>Total Deduction</th>
+                                            <th>Net Pay</th>
+                                            <th>Date Paid</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model.PayrollHistory != null && Model.PayrollHistory.Rows.Count > 0)
+                                        {
+                                            @foreach (System.Data.DataRow row in Model.PayrollHistory.Rows)
+                                            {
+                                                <tr>
+                                                    <td>@Convert.ToDateTime(row["cutOffStart"]).ToString("MMM dd, yyyy")</td>
+                                                    <td>@Convert.ToDateTime(row["cutOffEnd"]).ToString("MMM dd, yyyy")</td>
+                                                    <td>@row["hoursWorked"] hrs</td>
+                                                    <td>₱ @Convert.ToDecimal(row["grossPay"]).ToString("N2")</td>
+                                                    <td>₱ @Convert.ToDecimal(row["totalDeduction"]).ToString("N2")</td>
+                                                    <td class="net-pay">₱ @Convert.ToDecimal(row["netPay"]).ToString("N2")</td>
+                                                    <td>@Convert.ToDateTime(row["datePaid"]).ToString("MMM dd, yyyy")</td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td colspan="7" class="empty-state">
+                                                    <i class="fas fa-receipt"></i>
+                                                    <p>No payroll history found for this staff member.</p>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Print Modal (for payslip) -->
+    <div id="printModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header" style="background: #1a237e;">
+                <h3><i class="fas fa-print"></i> Print Payslip</h3>
+                <button class="close-modal" onclick="closePrintModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Select payslip format:</p>
+                <div class="print-options">
+                    <button class="btn-print-option" onclick="printPayslip('detailed')">
+                        <i class="fas fa-file-alt"></i> Detailed Payslip
+                    </button>
+                  
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Payroll Confirmation Modal -->
+    <div id="payConfirmModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header" style="background: #1a237e;">
+                <h3><i class="fas fa-money-bill-wave"></i> Confirm Payroll Processing</h3>
+                <button class="close-modal" onclick="closePayConfirmModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 16px; margin: 20px 0;" id="payConfirmMessage">
+                    Are you sure you want to process payroll for the period?
+                </p>
+                <p style="color: #666; font-size: 14px;">This action will create a payroll record and cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-cancel" onclick="closePayConfirmModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPayroll()">Confirm</button>
+            </div>
+        </div>
+    </div>
+    <!-- No Hours Worked Modal -->
+    <div id="noHoursModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header" style="background: #f44336;">
+                <h3><i class="fas fa-exclamation-triangle"></i> Cannot Process Payroll</h3>
+                <button class="close-modal" onclick="closeNoHoursModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size: 16px; margin: 20px 0;" id="noHoursMessage">
+                    This staff member has no hours worked for the selected period. Payroll cannot be processed.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="closeNoHoursModal()" style="background: #f44336;">OK</button>
+            </div>
+        </div>
+    </div>
+    <script>
+        // ========== SINGLE DATE PICKER LOGIC ==========
+
+        // Update end date and display range based on start date
+function updateEndDate() {
+    var startDateInput = document.getElementById('startDate');
+    if (!startDateInput.value) return;
+    
+    var startDate = new Date(startDateInput.value);
+    var endDate = new Date(startDate);
+    endDate.setDate(startDate.getDate() + 5); // +5 days = 6-day inclusive period
+    
+    var endDateString = endDate.toISOString().split('T')[0];
+    document.getElementById('endDate').value = endDateString;
+    
+    // Display formatted range
+    var options = { year: 'numeric', month: 'short', day: 'numeric' };
+    var startDisplay = startDate.toLocaleDateString(undefined, options);
+    var endDisplay = endDate.toLocaleDateString(undefined, options);
+    document.getElementById('dateRangeDisplay').textContent = `Selected period: ${startDisplay} to ${endDisplay}`;
+}
+
+        // Filter button: redirect with computed dates
+        function applyDateFilter() {
+            updateEndDate(); // ensure end date is set
+            var startDate = document.getElementById('startDate').value;
+            var endDate = document.getElementById('endDate').value;
+            var username = '@Model.SelectedUsername';
+            
+            window.location.href = `/payroll?username=${username}&startDate=${startDate}&endDate=${endDate}`;
+        }
+
+        // Update hidden fields in PAY form before submission
+        function updatePayFormDates() {
+            updateEndDate();
+            document.getElementById('payStartDate').value = document.getElementById('startDate').value;
+            document.getElementById('payEndDate').value = document.getElementById('endDate').value;
+            return true; // allow form submission
+        }
+
+        // Reset function (unchanged)
+        function resetPayroll() {
+            var username = '@Model.SelectedUsername';
+            window.location.href = `/payroll?username=${username}`;
+        }
+
+        // Print functions (unchanged but uses current dates)
+        function printPayroll() {
+            document.getElementById('printModal').classList.add('active');
+        }
+
+        function closePrintModal() {
+            document.getElementById('printModal').classList.remove('active');
+        }
+
+        function printPayslip(type) {
+    var username = '@Model.SelectedUsername';
+    var startDate = document.getElementById('startDate').value;
+    var endDate = document.getElementById('endDate').value;
+    
+    if (!startDate || !endDate) {
+        alert('Please select a valid date range first.');
+        return false;
+    }
+    
+    // Use the exact date values without reformatting
+    console.log("Opening payslip with:");
+    console.log("Username: " + username);
+    console.log("StartDate: " + startDate);
+    console.log("EndDate: " + endDate);
+    console.log("Type: " + type);
+    
+    // Open the payslip page with the exact date strings
+    window.open(`/Payslip?username=${username}&startDate=${startDate}&endDate=${endDate}&type=${type}`, '_blank');
+    closePrintModal();
+}
+
+        function confirmPay() {
+        // Ensure end date is calculated and hidden fields are set
+            updateEndDate();
+            
+            var startDate = document.getElementById('startDate').value;
+            var endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select a start date first.');
+                return false;
+            }
+            
+            // Update the form's hidden fields
+            document.getElementById('payStartDate').value = startDate;
+            document.getElementById('payEndDate').value = endDate;
+            
+            // Format dates for the message
+            var options = { year: 'numeric', month: 'long', day: 'numeric' };
+            var start = new Date(startDate).toLocaleDateString(undefined, options);
+            var end = new Date(endDate).toLocaleDateString(undefined, options);
+            
+            var message = `Are you sure you want to process payroll for period from ${start} to ${end}?`;
+            return confirm(message);
+        }
+        // Function to open the payroll confirmation modal
+        function openPayConfirmModal() {
+            // Check if there are hours worked
+            var hoursWorked = @Model.HoursWorked;
+            if (hoursWorked <= 0) {
+                openNoHoursModal();
+                return false;
+            }
+            // Ensure end date is calculated and hidden fields are set
+            updateEndDate();
+            
+            var startDate = document.getElementById('startDate').value;
+            var endDate = document.getElementById('endDate').value;
+            
+            if (!startDate || !endDate) {
+                alert('Please select a start date first.');
+                return false;
+            }
+            
+            // Update the form's hidden fields
+            document.getElementById('payStartDate').value = startDate;
+            document.getElementById('payEndDate').value = endDate;
+            
+            // Format dates for the message
+            var options = { year: 'numeric', month: 'long', day: 'numeric' };
+            var start = new Date(startDate).toLocaleDateString(undefined, options);
+            var end = new Date(endDate).toLocaleDateString(undefined, options);
+            
+            // Set the message in the modal
+            document.getElementById('payConfirmMessage').innerHTML = 
+                `Are you sure you want to process payroll for period from <strong>${start}</strong> to <strong>${end}</strong>?`;
+            
+            // Show the modal
+            document.getElementById('payConfirmModal').classList.add('active');
+            return false; // prevent default form submission
+        }
+
+        // Function to close the modal
+        function closePayConfirmModal() {
+            document.getElementById('payConfirmModal').classList.remove('active');
+        }
+
+        // Function to submit the payroll form after confirmation
+        function submitPayroll() {
+            // Close the modal
+            closePayConfirmModal();
+            // Submit the form
+            document.getElementById('payForm').submit();
+        }
+        // Function to open the "no hours" modal
+        function openNoHoursModal() {
+            document.getElementById('noHoursModal').classList.add('active');
+        }
+
+        // Function to close the "no hours" modal
+        function closeNoHoursModal() {
+            document.getElementById('noHoursModal').classList.remove('active');
+        }
+
+        // Modify the PAY button's onclick (instead of onsubmit)
+        // Menu toggle
+        document.querySelector('.menu-toggle').addEventListener('click', function() {
+            document.querySelector('.sidebar').classList.toggle('active');
+        });
+
+        // Close modals when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        }
+
+        // Initialise on page load
+        window.onload = function() {
+            updateEndDate();
+            document.getElementById('startDate').addEventListener('change', updateEndDate);
+        };
+    </script>
+</body>
+</html>

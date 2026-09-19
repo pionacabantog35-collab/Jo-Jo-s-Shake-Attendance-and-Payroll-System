@@ -1,0 +1,377 @@
+/* Staff Dashboard Specific Styles */
+
+/* DateTime Card */
+.datetime-card {
+    background: linear-gradient(135deg, #1a237e, #283593);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: white;
+    box-shadow: 0 5px 15px rgba(26, 35, 126, 0.3);
+}
+
+.date-box, .time-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.date-box i, .time-box i {
+    font-size: 32px;
+    opacity: 0.9;
+}
+
+.date-info, .time-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.date-info .day {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.date-info .date {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.time-info .time {
+    font-size: 28px;
+    font-weight: bold;
+    font-family: monospace;
+    margin-bottom: 5px;
+}
+
+.time-info .timezone {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+/* Staff Info Card */
+.staff-info-card {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.staff-avatar-large i {
+    font-size: 80px;
+    color: #1a237e;
+}
+
+.staff-details-large {
+    flex: 1;
+}
+
+.staff-details-large h2 {
+    color: #333;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.staff-details-large p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.staff-details-large p i {
+    width: 20px;
+    color: #1a237e;
+}
+
+.staff-stats {
+    display: flex;
+    gap: 30px;
+    background: #f5f5f5;
+    padding: 15px 25px;
+    border-radius: 8px;
+}
+
+.stat {
+    text-align: center;
+}
+
+.stat-label {
+    display: block;
+    font-size: 12px;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    display: block;
+    font-size: 18px;
+    font-weight: bold;
+    color: #1a237e;
+}
+
+/* Time Clock Card */
+.timeclock-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+    margin-bottom: 20px;
+}
+
+.timeclock-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fafafa;
+}
+
+.timeclock-header h3 {
+    color: #1a237e;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.timeclock-body {
+    padding: 30px;
+}
+
+.time-section {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.time-in-section {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+}
+
+.time-out-section {
+    background: #fff3e0;
+    border: 2px solid #ff9800;
+}
+
+.time-icon-large i {
+    font-size: 48px;
+}
+
+.time-in-section .time-icon-large i {
+    color: #4caf50;
+}
+
+.time-out-section .time-icon-large i {
+    color: #ff9800;
+}
+
+.time-details-large {
+    flex: 1;
+}
+
+.time-details-large h4 {
+    font-size: 20px;
+    margin-bottom: 5px;
+    color: #333;
+}
+
+.time-details-large p {
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.time-details-large strong {
+    color: #1a237e;
+}
+
+.btn-timein, .btn-timeout {
+    padding: 12px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s;
+}
+
+.btn-timein {
+    background: #4caf50;
+    color: white;
+}
+
+.btn-timein:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-timeout {
+    background: #ff9800;
+    color: white;
+}
+
+.btn-timeout:hover {
+    background: #e68900;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 152, 0, 0.3);
+}
+
+/* Summary Card */
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.summary-card h3 {
+    color: #1a237e;
+    font-size: 16px;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 15px;
+}
+
+.summary-item {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.summary-label {
+    font-size: 12px;
+    color: #666;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Status Badges */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+.status-present {
+    background: #e8f5e9;
+    color: #4caf50;
+}
+
+.status-absent {
+    background: #ffebee;
+    color: #f44336;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .datetime-card {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .staff-info-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .staff-stats {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .time-section {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .staff-stats {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+/* Time Completed Section */
+.time-completed-section {
+    background: #e8f5e9;
+    border: 2px solid #4caf50;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    border-radius: 8px;
+}
+
+.time-completed-section .time-icon-large i {
+    font-size: 48px;
+    color: #4caf50;
+}
+
+/* Logout Button */
+.logout-btn {
+    background: none;
+    border: none;
+    color: rgba(255,255,255,0.8);
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    padding: 12px 25px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    font-size: 15px;
+    transition: all 0.3s;
+    border-radius: 8px;
+}
+
+.logout-btn:hover {
+    background: rgba(255,255,255,0.1);
+    color: white;
+}
+
+.logout-btn i {
+    width: 25px;
+    font-size: 18px;
+}

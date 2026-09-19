@@ -1,0 +1,248 @@
+@page
+@model Shakepayrollsystem.Pages.PayslipModel
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payslip - @Model.EmployeeName</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+        body {
+            background: #f5f7fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .payslip-container {
+            max-width: 1000px;
+            width: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+        .payslip-header {
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            color: white;
+            padding: 30px 40px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .company-logo {
+            font-size: 3rem;
+            background: rgba(255,255,255,0.1);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+        .company-info h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+        .company-info p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        .payslip-title {
+            background: #f5f5f5;
+            padding: 15px 40px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .payslip-title h2 {
+            color: #1a237e;
+            font-weight: 600;
+            font-size: 1.8rem;
+            margin: 0;
+        }
+        .employee-details {
+            padding: 30px 40px 20px;
+            display: flex;
+            justify-content: space-between;
+            background: #fafafa;
+            border-bottom: 2px dashed #ccc;
+        }
+        .detail-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .detail-item i {
+            width: 24px;
+            color: #1a237e;
+            font-size: 1.2rem;
+        }
+        .detail-item span {
+            color: #333;
+        }
+        .detail-item strong {
+            font-weight: 600;
+            margin-left: 5px;
+        }
+        .pay-period {
+            background: #e8eaf6;
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+        }
+        .summary-section {
+            padding: 0 40px 30px;
+            display: flex;
+            justify-content: space-between;
+            gap: 30px;
+        }
+        .earnings-card, .deductions-card {
+            flex: 1;
+            background: #f9f9f9;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .earnings-card h4, .deductions-card h4 {
+            color: #1a237e;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+            border-bottom: 2px solid #1a237e;
+            padding-bottom: 8px;
+        }
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px dotted #ccc;
+        }
+        .summary-row.total {
+            font-weight: 700;
+            border-bottom: none;
+            padding-top: 12px;
+            font-size: 1.1rem;
+            color: #1a237e;
+        }
+        .net-pay-section {
+            background: #1a237e;
+            color: white;
+            padding: 25px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .net-pay-label {
+            font-size: 1.5rem;
+            font-weight: 500;
+        }
+        .net-pay-amount {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: rgba(255,255,255,0.2);
+            padding: 10px 30px;
+            border-radius: 50px;
+        }
+        .footer {
+            padding: 20px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            border-top: 1px solid #eee;
+        }
+        .badge-present { background-color: #4caf50; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+        .badge-late { background-color: #f44336; color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
+
+        @@media print {
+            body { background: white; padding: 0; }
+            .payslip-container { box-shadow: none; border-radius: 0; }
+            .no-print { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="payslip-container">
+        <div class="payslip-header">
+            <div class="company-logo">
+                <i class="fas fa-building"></i>
+            </div>
+            <div class="company-info">
+                <h1>SHAKE PAYROLL</h1>
+                <p>Luzon Avenue, Quezon City | (02) 1234-5678</p>
+            </div>
+        </div>
+        <div class="payslip-title">
+            <h2>@(Model.Type == "detailed" ? "DETAILED PAYSLIP" : "SUMMARY PAYSLIP")</h2>
+            <button onclick="window.print()" class="no-print" style="padding: 8px 20px; background: #1a237e; color: white; border: none; border-radius: 50px; font-size: 0.9rem; cursor: pointer;">
+                <i class="fas fa-print"></i> Print / Save PDF
+            </button>
+        </div>
+        <div class="employee-details">
+            <div class="detail-group">
+                <div class="detail-item"><i class="fas fa-user"></i><span>Employee: <strong>@Model.EmployeeName</strong></span></div>
+                <div class="detail-item"><i class="fas fa-id-card"></i><span>Username: <strong>@Model.Username</strong></span></div>
+                <div class="detail-item"><i class="fas fa-envelope"></i><span>Email: <strong>@Model.Email</strong></span></div>
+            </div>
+            <div class="detail-group">
+                <div class="detail-item"><i class="fas fa-phone"></i><span>Contact: <strong>@Model.Contact</strong></span></div>
+                <div class="detail-item"><i class="fas fa-calendar-alt"></i><span>Pay Period: <strong>@Model.StartDate.ToString("MMM dd, yyyy") – @Model.EndDate.ToString("MMM dd, yyyy")</strong></span></div>
+                <div class="detail-item"><i class="fas fa-clock"></i><span>Date Paid: <strong>@DateTime.Now.ToString("MMM dd, yyyy")</strong></span></div>
+            </div>
+        </div>
+        <div class="pay-period">
+            <span><i class="fas fa-calendar-check"></i> Cutoff: @Model.StartDate.ToString("MMMM dd, yyyy") to @Model.EndDate.ToString("MMMM dd, yyyy")</span>
+            <span><i class="fas fa-hourglass-half"></i> Total Hours: @Model.TotalHours.ToString("F2") hrs</span>
+        </div>
+
+        <!-- Earnings & Deductions -->
+        <div class="summary-section">
+            <div class="earnings-card">
+                <h4>Earnings</h4>
+                <div class="summary-row"><span>Regular Hours</span> <span>@Model.TotalHours.ToString("F2") hrs</span></div>
+                <div class="summary-row"><span>Rate per Hour</span> <span>₱ @Model.RatePerHour.ToString("N2")</span></div>
+                <div class="summary-row total"><span>Gross Pay</span> <span>₱ @Model.GrossPay.ToString("N2")</span></div>
+            </div>
+            <div class="deductions-card">
+                <h4>Deductions</h4>
+                <div class="summary-row"><span>SSS</span> <span>₱ @Model.SSS.ToString("N2")</span></div>
+                <div class="summary-row"><span>PhilHealth</span> <span>₱ @Model.PhilHealth.ToString("N2")</span></div>
+                <div class="summary-row"><span>Pag-IBIG</span> <span>₱ @Model.PagIbig.ToString("N2")</span></div>
+                <div class="summary-row total"><span>Total Deductions</span> <span>₱ @Model.TotalDeductions.ToString("N2")</span></div>
+            </div>
+        </div>
+
+        <!-- Net Pay -->
+        <div class="net-pay-section">
+            <span class="net-pay-label">NET PAY</span>
+            <span class="net-pay-amount">₱ @Model.NetPay.ToString("N2")</span>
+        </div>
+
+        <div class="footer">
+            <p>This is a computer‑generated payslip. No signature required.</p>
+            <p><i class="fas fa-print"></i> Generated on @DateTime.Now.ToString("MMMM dd, yyyy hh:mm tt")</p>
+        </div>
+    </div>
+</body>
+</html>
